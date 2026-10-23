@@ -33,18 +33,18 @@ mnt=""
 cleanup() { [ -n "$mnt" ] && hdiutil detach -quiet "$mnt" 2>/dev/null || true; rm -rf "$tmp"; }
 trap cleanup EXIT INT TERM
 
-say "Downloading PRevue $tag…"
+say "Downloading PRevue ${tag}..."
 curl -fL --progress-bar -o "$tmp/PRevue.dmg" "$url" || fail "download failed."
 mnt=$(hdiutil attach -nobrowse -readonly -noautoopen "$tmp/PRevue.dmg" 2>/dev/null | awk -F'\t' '/\/Volumes\//{print $NF}' | tail -1)
 [ -n "$mnt" ] && [ -d "$mnt/PRevue.app" ] || fail "couldn't open the DMG."
 
 if pgrep -f "$dest/PRevue.app/Contents/MacOS/" >/dev/null 2>&1; then
-  say "Quitting the running PRevue…"; osascript -e 'tell application "PRevue" to quit' >/dev/null 2>&1 || true; sleep 1
+  say "Quitting the running PRevue..."; osascript -e 'tell application "PRevue" to quit' >/dev/null 2>&1 || true; sleep 1
 fi
 rm -rf "$dest/PRevue.app"
 cp -R "$mnt/PRevue.app" "$dest/" || fail "couldn't copy PRevue.app into $dest."
 xattr -dr com.apple.quarantine "$dest/PRevue.app" 2>/dev/null || true
 
-say "Installed PRevue $tag in $dest."
+say "Installed PRevue ${tag} in $dest."
 command -v gh >/dev/null 2>&1 || say "Next: install the GitHub CLI (brew install gh) and run: gh auth login"
 [ -n "${PREVUE_NO_OPEN:-}" ] || open "$dest/PRevue.app"
